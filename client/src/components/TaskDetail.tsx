@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Task } from '../hooks/useTasks';
+import { Task } from '../types';
 
 interface Props {
   task: Task;

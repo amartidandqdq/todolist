@@ -1,0 +1,18 @@
+@media (max-width: 768px) {
+  .sidebar { width: 220px; min-width: 220px; }
+  .detail-panel { width: 280px; min-width: 280px; }
+}
+
+@media (max-width: 600px) {
+  #root { flex-direction: column; }
+  .sidebar {
+    width: 100%; min-width: auto;
+    flex-direction: row; overflow-x: auto;
+    padding: 8px; border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+  .sidebar h1 { display: none; }
+  .sidebar-list { display: flex; gap: 4px; }
+  .sidebar-item { padding: 6px 12px; white-space: nowrap; border-radius: var(--radius); }
+  .detail-panel { width: 100%; min-width: auto; }
+}
