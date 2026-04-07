@@ -10,9 +10,11 @@ interface Props {
   onAdd: (name: string) => void;
   onDelete: (id: number) => void;
   taskCounts: Record<number, number>;
+  theme: string;
+  onToggleTheme: () => void;
 }
 
-export default function Sidebar({ lists, activeListId, viewMode, onSelectList, onSelectView, onAdd, onDelete, taskCounts }: Props) {
+export default function Sidebar({ lists, activeListId, viewMode, onSelectList, onSelectView, onAdd, onDelete, taskCounts, theme, onToggleTheme }: Props) {
   const [adding, setAdding] = useState(false);
   const [name, setName] = useState('');
 
@@ -20,9 +22,16 @@ export default function Sidebar({ lists, activeListId, viewMode, onSelectList, o
     if (name.trim()) { onAdd(name.trim()); setName(''); setAdding(false); }
   };
 
+  const isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+
   return (
     <nav className="sidebar">
-      <div className="sidebar-header">Tasks</div>
+      <div className="sidebar-header">
+        <span>Tasks</span>
+        <button className="theme-toggle" onClick={onToggleTheme} title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}>
+          {isDark ? '\u2600' : '\u263E'}
+        </button>
+      </div>
 
       <div className="sidebar-section">
         <div className={`sidebar-item ${viewMode === 'starred' ? 'active' : ''}`} onClick={() => onSelectView('starred')}>

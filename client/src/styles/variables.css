@@ -1,4 +1,30 @@
-:root {
+:root, [data-theme="light"] {
+  --bg: #ffffff;
+  --bg-surface: #f8f9fa;
+  --bg-surface-high: #f1f3f4;
+  --bg-hover: #e8eaed;
+  --bg-input: #ffffff;
+  --text: #202124;
+  --text-secondary: #5f6368;
+  --text-dim: #9aa0a6;
+  --primary: #1a73e8;
+  --primary-dark: #1a73e8;
+  --primary-bg: rgba(26,115,232,0.08);
+  --danger: #d93025;
+  --success: #188038;
+  --star: #f9ab00;
+  --border: #dadce0;
+  --border-light: #e0e0e0;
+  --radius: 8px;
+  --radius-lg: 16px;
+  --shadow: 0 1px 3px rgba(0,0,0,0.12);
+  --font: 'Google Sans', 'Roboto', -apple-system, sans-serif;
+  --checkbox-border: #80868b;
+  --checkbox-bg: var(--primary);
+  --checkbox-check: #ffffff;
+}
+
+[data-theme="dark"] {
   --bg: #202124;
   --bg-surface: #292a2d;
   --bg-surface-high: #35363a;
@@ -15,8 +41,33 @@
   --star: #fbbc04;
   --border: #3c4043;
   --border-light: #5f6368;
-  --radius: 8px;
-  --radius-lg: 16px;
   --shadow: 0 1px 3px rgba(0,0,0,0.3);
-  --font: 'Google Sans', 'Roboto', -apple-system, sans-serif;
+  --checkbox-border: #5f6368;
+  --checkbox-bg: var(--primary);
+  --checkbox-check: #202124;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #202124;
+    --bg-surface: #292a2d;
+    --bg-surface-high: #35363a;
+    --bg-hover: #3c4043;
+    --bg-input: #35363a;
+    --text: #e8eaed;
+    --text-secondary: #9aa0a6;
+    --text-dim: #6e7681;
+    --primary: #8ab4f8;
+    --primary-dark: #4285f4;
+    --primary-bg: rgba(138,180,248,0.08);
+    --danger: #f28b82;
+    --success: #81c995;
+    --star: #fbbc04;
+    --border: #3c4043;
+    --border-light: #5f6368;
+    --shadow: 0 1px 3px rgba(0,0,0,0.3);
+    --checkbox-border: #5f6368;
+    --checkbox-bg: var(--primary);
+    --checkbox-check: #202124;
+  }
 }

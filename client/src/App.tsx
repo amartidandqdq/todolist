@@ -1,8 +1,9 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Sidebar from './components/Sidebar';
 import TaskList from './components/TaskList';
 import { useLists } from './hooks/useLists';
 import { useTasks } from './hooks/useTasks';
+import { useTheme } from './hooks/useTheme';
 import { ViewMode, SortMode } from './types';
 
 export default function App() {
@@ -10,6 +11,7 @@ export default function App() {
   const [activeListId, setActiveListId] = useState(1);
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [sort, setSort] = useState<SortMode>('my_order');
+  const { theme, toggle: toggleTheme } = useTheme();
 
   const taskOpts = useMemo(() => ({
     listId: viewMode === 'list' ? activeListId : undefined,
@@ -37,7 +39,6 @@ export default function App() {
 
   const listName = viewMode === 'starred' ? 'Starred' : (activeList?.name || 'Tasks');
 
-  // Keyboard shortcuts
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
@@ -53,13 +54,14 @@ export default function App() {
   return (
     <>
       {error && (
-        <div style={{ position: 'fixed', top: 12, left: '50%', transform: 'translateX(-50%)', background: 'var(--danger)', color: 'var(--bg)', padding: '8px 20px', borderRadius: 20, zIndex: 100, fontSize: 13, fontWeight: 500 }}>
+        <div style={{ position: 'fixed', top: 12, left: '50%', transform: 'translateX(-50%)', background: 'var(--danger)', color: 'white', padding: '8px 20px', borderRadius: 20, zIndex: 100, fontSize: 13, fontWeight: 500 }}>
           {error}
         </div>
       )}
       <Sidebar lists={lists} activeListId={activeListId} viewMode={viewMode}
         onSelectList={setActiveListId} onSelectView={setViewMode}
-        onAdd={addList} onDelete={deleteList} taskCounts={taskCounts} />
+        onAdd={addList} onDelete={deleteList} taskCounts={taskCounts}
+        theme={theme} onToggleTheme={toggleTheme} />
       <TaskList listName={listName} tasks={tasks} loading={loading}
         sort={sort} onSortChange={setSort}
         onAddTask={addTask} onToggle={toggleComplete} onStar={toggleStar}
