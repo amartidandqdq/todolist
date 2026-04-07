@@ -1,3 +1,9 @@
+/**
+ * @module types
+ * Shared TypeScript interfaces for the TodoList client.
+ */
+
+/** A task (or subtask if parent_id is set) */
 export interface Task {
   id: number;
   list_id: number;
@@ -16,6 +22,7 @@ export interface Task {
   subtasks?: Task[];
 }
 
+/** A named task list (e.g. "Work", "Personal") */
 export interface TaskList {
   id: number;
   name: string;
@@ -24,5 +31,8 @@ export interface TaskList {
   created_at: string;
 }
 
+/** Sort modes matching Google Tasks: custom order, by date, or by starred */
 export type SortMode = 'my_order' | 'date' | 'starred';
+
+/** Navigation view modes */
 export type ViewMode = 'list' | 'all' | 'starred';

@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import db from '../db.js';
+import db from '../db/index.js';
 import { computeNextDate } from '../utils/recurrence.js';
 import { emitEvent } from '../utils/webhooks.js';
 

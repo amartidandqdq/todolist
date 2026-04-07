@@ -1,6 +1,12 @@
+/**
+ * Global CSS entry point.
+ * Imports all atomic stylesheets in dependency order.
+ */
 @import './variables.css';
 @import './base.css';
 @import './sidebar.css';
-@import './task.css';
+@import './layout.css';
+@import './task-item.css';
 @import './detail.css';
+@import './widgets.css';
 @import './responsive.css';

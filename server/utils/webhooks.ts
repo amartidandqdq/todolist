@@ -1,6 +1,7 @@
-import db from '../db.js';
+import db from '../db/index.js';
 import { createHmac } from 'crypto';
 
+/** Webhook row as stored in SQLite */
 interface WebhookRow {
   id: number;
   url: string;
@@ -8,7 +9,13 @@ interface WebhookRow {
   secret: string | null;
 }
 
-export async function emitEvent(event: string, payload: any) {
+/**
+ * Fire a webhook event to all registered listeners.
+ * Non-blocking — errors are silently caught per webhook.
+ * @param event - Event name (e.g. 'task.created', 'task.completed')
+ * @param payload - Event data (typically the affected task/list object)
+ */
+export async function emitEvent(event: string, payload: unknown): Promise<void> {
   const webhooks = db.prepare('SELECT * FROM webhooks').all() as WebhookRow[];
 
   for (const wh of webhooks) {
