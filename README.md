@@ -1,52 +1,150 @@
 # TodoList
 
-Self-hosted Google Tasks clone. Docker + Tailscale for secure access on your network.
+Clone de Google Tasks auto-heberge. Tourne sur ton NAS TrueNAS Scale via Docker, accessible de partout grace a Tailscale.
 
-## Features
+## Ce que ca fait
 
-- Multiple task lists with colors
-- Tasks with due dates, notes, subtasks
-- Recurring tasks (daily, weekly, monthly)
-- Drag & drop reordering
-- Dark mode UI
-- Accessible via Tailscale (HTTPS)
+- Creer plusieurs listes de taches (travail, perso, courses...)
+- Taches avec dates, notes, sous-taches
+- Taches recurrentes (tous les jours, semaines, mois)
+- Glisser-deposer pour reorganiser
+- Interface sombre, responsive (marche sur telephone)
+- Accessible en HTTPS depuis n'importe quel appareil sur ton reseau Tailscale
 
-## Quick Start (Docker)
+---
 
-1. Copy `.env.example` to `.env` and set your Tailscale auth key:
-   ```bash
-   cp .env.example .env
-   # Edit .env with your TAILSCALE_AUTHKEY
-   ```
+## Installation sur TrueNAS Scale
 
-2. Run:
-   ```bash
-   docker compose up -d
-   ```
+### Etape 1 : Installer Tailscale (si pas deja fait)
 
-3. Access at `https://todolist.<your-tailnet>.ts.net`
+1. Va sur [tailscale.com](https://tailscale.com) et cree un compte gratuit
+2. Installe Tailscale sur ton telephone/PC depuis [tailscale.com/download](https://tailscale.com/download)
+3. Connecte-toi sur chaque appareil
 
-## Get a Tailscale Auth Key
+### Etape 2 : Generer une cle Tailscale
 
-1. Go to [Tailscale Admin Console](https://login.tailscale.com/admin/settings/keys)
-2. Generate an auth key (reusable recommended)
-3. Paste it in `.env`
+1. Va sur [login.tailscale.com/admin/settings/keys](https://login.tailscale.com/admin/settings/keys)
+2. Clique sur **"Generate auth key"**
+3. Coche **"Reusable"** (important !)
+4. Copie la cle qui commence par `tskey-auth-...`
 
-## Local Development
+### Etape 3 : Installer TodoList sur le NAS
+
+Ouvre le **Shell** de TrueNAS (interface web > System > Shell) et lance :
 
 ```bash
-# Backend
-npm install
-npm run dev
-
-# Frontend (separate terminal)
-cd client
-npm install
-npm run dev
+curl -fsSL https://raw.githubusercontent.com/amartidandqdq/todolist/master/install.sh | bash
 ```
 
-## Tech Stack
+Quand le script te demande ta cle Tailscale, colle-la.
 
-- **Frontend**: React + Vite + TypeScript
-- **Backend**: Node.js + Express + SQLite
-- **Infra**: Docker + Tailscale
+C'est tout ! L'app sera accessible a :
+
+```
+https://todolist.<ton-tailnet>.ts.net
+```
+
+(Tu peux trouver le nom de ton tailnet dans l'admin Tailscale)
+
+### Installation manuelle (alternative)
+
+```bash
+# Clone le projet
+git clone https://github.com/amartidandqdq/todolist.git
+cd todolist
+
+# Lance l'installateur
+bash install.sh
+```
+
+---
+
+## Utilisation
+
+### Acceder a l'app
+
+Depuis n'importe quel appareil connecte a ton Tailscale :
+- Ouvre `https://todolist.<ton-tailnet>.ts.net` dans ton navigateur
+- Sur telephone : ajoute la page en raccourci sur l'ecran d'accueil
+
+### Gerer les taches
+
+- **Ajouter une tache** : tape dans le champ en haut et appuie sur Entree
+- **Cocher une tache** : clique sur le rond a gauche
+- **Modifier une tache** : clique sur le texte de la tache (panneau a droite)
+- **Ajouter une sous-tache** : clique "+ Add subtask" sous une tache
+- **Reorganiser** : glisse-depose les taches
+- **Creer une liste** : clique "+ New list" dans la barre laterale
+
+### Taches recurrentes
+
+1. Clique sur une tache pour ouvrir le panneau de detail
+2. Choisis la recurrence (Daily, Weekly, Monthly...)
+3. Quand tu coches la tache, une nouvelle est automatiquement creee
+
+---
+
+## Sauvegardes
+
+Les donnees sont dans le dossier `data/`. Pour sauvegarder :
+
+```bash
+cd ~/todolist
+bash backup.sh
+```
+
+Les sauvegardes sont dans `backups/`. Pour restaurer :
+
+```bash
+bash backup.sh restore backups/todolist-2026-04-07.db
+```
+
+---
+
+## Mise a jour
+
+```bash
+cd ~/todolist
+bash update.sh
+```
+
+---
+
+## Depannage
+
+### L'app ne demarre pas
+```bash
+cd ~/todolist
+docker compose logs
+```
+
+### Je ne peux pas acceder a l'app
+- Verifie que Tailscale est actif sur ton appareil
+- Verifie que le container tourne : `docker compose ps`
+- Relance : `docker compose restart`
+
+### Je veux changer le nom de l'app dans Tailscale
+Edite `.env` et change `TS_HOSTNAME=todolist` par le nom voulu, puis :
+```bash
+docker compose down
+docker compose up -d
+```
+
+### Je veux tout supprimer
+```bash
+cd ~/todolist
+docker compose down -v
+cd .. && rm -rf todolist
+```
+
+---
+
+## Pour les curieux
+
+| Composant | Technologie | Role |
+|-----------|------------|------|
+| Interface | React + TypeScript | Ce que tu vois dans le navigateur |
+| Serveur | Node.js + Express | Gere les requetes et sert l'interface |
+| Base de donnees | SQLite | Stocke tes taches (un seul fichier) |
+| Conteneur | Docker | Emballe tout pour que ca tourne partout |
+| Reseau | Tailscale | Connexion securisee entre tes appareils |
