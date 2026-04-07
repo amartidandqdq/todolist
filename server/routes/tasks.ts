@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import db from '../db.js';
 import { computeNextDate } from '../utils/recurrence.js';
+import { emitEvent } from '../utils/webhooks.js';
 
 const router = Router();
 
@@ -36,7 +37,9 @@ router.post('/tasks', (req: Request, res: Response) => {
     'INSERT INTO tasks (list_id, parent_id, title, notes, due_date, position, recurrence_rule) VALUES (?, ?, ?, ?, ?, ?, ?)'
   ).run(targetListId, parent_id || null, title, notes || '', due_date || null, maxPos.max + 1, recurrence_rule || null);
 
-  res.status(201).json(db.prepare('SELECT * FROM tasks WHERE id = ?').get(result.lastInsertRowid));
+  const task = db.prepare('SELECT * FROM tasks WHERE id = ?').get(result.lastInsertRowid);
+  emitEvent('task.created', task);
+  res.status(201).json(task);
 });
 
 router.put('/tasks/:id', (req: Request, res: Response) => {
@@ -46,7 +49,9 @@ router.put('/tasks/:id', (req: Request, res: Response) => {
       due_date = ?, recurrence_rule = ?, list_id = COALESCE(?, list_id), updated_at = datetime('now')
     WHERE id = ?
   `).run(title, notes, due_date ?? null, recurrence_rule ?? null, list_id, req.params.id);
-  res.json(db.prepare('SELECT * FROM tasks WHERE id = ?').get(req.params.id));
+  const task = db.prepare('SELECT * FROM tasks WHERE id = ?').get(req.params.id);
+  emitEvent('task.updated', task);
+  res.json(task);
 });
 
 router.put('/tasks/:id/complete', (req: Request, res: Response) => {
@@ -66,7 +71,9 @@ router.put('/tasks/:id/complete', (req: Request, res: Response) => {
       .run(task.list_id, null, task.title, task.notes, nextDate, maxPos.max + 1, task.recurrence_rule);
   }
 
-  res.json(db.prepare('SELECT * FROM tasks WHERE id = ?').get(req.params.id));
+  const updated = db.prepare('SELECT * FROM tasks WHERE id = ?').get(req.params.id);
+  emitEvent('task.completed', updated);
+  res.json(updated);
 });
 
 router.put('/tasks/:id/reorder', (req: Request, res: Response) => {
@@ -76,7 +83,9 @@ router.put('/tasks/:id/reorder', (req: Request, res: Response) => {
 });
 
 router.delete('/tasks/:id', (req: Request, res: Response) => {
+  const task = db.prepare('SELECT * FROM tasks WHERE id = ?').get(req.params.id);
   db.prepare('DELETE FROM tasks WHERE id = ?').run(req.params.id);
+  emitEvent('task.deleted', task);
   res.status(204).end();
 });
 

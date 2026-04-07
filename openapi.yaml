@@ -1,0 +1,456 @@
+openapi: 3.1.0
+info:
+  title: TodoList API
+  version: 1.0.0
+  description: Self-hosted Google Tasks clone. Full CRUD for lists, tasks, subtasks with recurrence and batch operations.
+
+servers:
+  - url: /api
+    description: Local API
+
+paths:
+  /lists:
+    get:
+      operationId: getLists
+      summary: Get all task lists
+      responses:
+        '200':
+          description: Array of lists
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/List'
+    post:
+      operationId: createList
+      summary: Create a new list
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name:
+                  type: string
+                color:
+                  type: string
+                  default: '#4285f4'
+      responses:
+        '201':
+          description: Created list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/List'
+
+  /lists/{id}:
+    put:
+      operationId: updateList
+      summary: Update a list
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                color:
+                  type: string
+      responses:
+        '200':
+          description: Updated list
+    delete:
+      operationId: deleteList
+      summary: Delete a list and all its tasks
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Deleted
+
+  /tasks:
+    get:
+      operationId: getTasks
+      summary: Get tasks (with subtasks attached)
+      parameters:
+        - name: list_id
+          in: query
+          schema:
+            type: integer
+        - name: completed
+          in: query
+          schema:
+            type: string
+            enum: ['true', 'false']
+      responses:
+        '200':
+          description: Array of tasks with subtasks
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TaskWithSubtasks'
+    post:
+      operationId: createTask
+      summary: Create a new task
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskCreate'
+      responses:
+        '201':
+          description: Created task
+
+  /tasks/batch:
+    post:
+      operationId: batchCreateTasks
+      summary: Create multiple tasks at once
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [tasks]
+              properties:
+                tasks:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/TaskCreate'
+      responses:
+        '201':
+          description: Array of created tasks
+    put:
+      operationId: batchUpdateTasks
+      summary: Update multiple tasks at once
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [tasks]
+              properties:
+                tasks:
+                  type: array
+                  items:
+                    type: object
+                    required: [id]
+                    properties:
+                      id:
+                        type: integer
+                      title:
+                        type: string
+                      notes:
+                        type: string
+                      due_date:
+                        type: string
+                        format: date
+                        nullable: true
+                      completed:
+                        type: boolean
+                      list_id:
+                        type: integer
+      responses:
+        '200':
+          description: Array of updated tasks
+    delete:
+      operationId: batchDeleteTasks
+      summary: Delete multiple tasks at once
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [ids]
+              properties:
+                ids:
+                  type: array
+                  items:
+                    type: integer
+      responses:
+        '200':
+          description: Deletion result
+
+  /tasks/{id}:
+    put:
+      operationId: updateTask
+      summary: Update a task
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                notes:
+                  type: string
+                due_date:
+                  type: string
+                  format: date
+                  nullable: true
+                recurrence_rule:
+                  type: string
+                  nullable: true
+                list_id:
+                  type: integer
+      responses:
+        '200':
+          description: Updated task
+    delete:
+      operationId: deleteTask
+      summary: Delete a task and its subtasks
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Deleted
+
+  /tasks/{id}/complete:
+    put:
+      operationId: toggleComplete
+      summary: Toggle task completion (creates next recurrence if applicable)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Updated task
+
+  /tasks/{id}/reorder:
+    put:
+      operationId: reorderTask
+      summary: Move task to a new position
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [position]
+              properties:
+                position:
+                  type: integer
+                list_id:
+                  type: integer
+      responses:
+        '200':
+          description: OK
+
+  /tasks/{id}/subtasks:
+    get:
+      operationId: getSubtasks
+      summary: Get subtasks for a task
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Array of subtasks
+    post:
+      operationId: createSubtask
+      summary: Add a subtask
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title]
+              properties:
+                title:
+                  type: string
+      responses:
+        '201':
+          description: Created subtask
+
+  /webhooks:
+    get:
+      operationId: listWebhooks
+      summary: List registered webhooks
+      responses:
+        '200':
+          description: Array of webhooks
+    post:
+      operationId: createWebhook
+      summary: Register a webhook for task events
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WebhookCreate'
+      responses:
+        '201':
+          description: Created webhook
+
+  /webhooks/{id}:
+    delete:
+      operationId: deleteWebhook
+      summary: Remove a webhook
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Deleted
+
+  /health:
+    get:
+      operationId: healthCheck
+      summary: Health check endpoint
+      responses:
+        '200':
+          description: Service status
+
+  /openapi.yaml:
+    get:
+      operationId: getOpenAPISpec
+      summary: Get the OpenAPI specification
+      responses:
+        '200':
+          description: OpenAPI YAML spec
+
+components:
+  schemas:
+    List:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        color:
+          type: string
+        position:
+          type: integer
+        created_at:
+          type: string
+
+    Task:
+      type: object
+      properties:
+        id:
+          type: integer
+        list_id:
+          type: integer
+        parent_id:
+          type: integer
+          nullable: true
+        title:
+          type: string
+        notes:
+          type: string
+        due_date:
+          type: string
+          format: date
+          nullable: true
+        completed:
+          type: integer
+          enum: [0, 1]
+        completed_at:
+          type: string
+          nullable: true
+        position:
+          type: integer
+        recurrence_rule:
+          type: string
+          nullable: true
+          description: 'JSON: {"freq":"daily|weekly|monthly","interval":1}'
+        created_at:
+          type: string
+        updated_at:
+          type: string
+
+    TaskWithSubtasks:
+      allOf:
+        - $ref: '#/components/schemas/Task'
+        - type: object
+          properties:
+            subtasks:
+              type: array
+              items:
+                $ref: '#/components/schemas/Task'
+
+    TaskCreate:
+      type: object
+      required: [title]
+      properties:
+        title:
+          type: string
+        list_id:
+          type: integer
+          default: 1
+        notes:
+          type: string
+        due_date:
+          type: string
+          format: date
+        recurrence_rule:
+          type: string
+          description: 'JSON: {"freq":"daily|weekly|monthly","interval":1}'
+
+    WebhookCreate:
+      type: object
+      required: [url, events]
+      properties:
+        url:
+          type: string
+          format: uri
+        events:
+          type: array
+          items:
+            type: string
+            enum: [task.created, task.updated, task.completed, task.deleted, list.created, list.deleted]
+        secret:
+          type: string
+          description: Optional HMAC secret for signature verification

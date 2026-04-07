@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import db from '../db.js';
+import { emitEvent } from '../utils/webhooks.js';
 
 const router = Router();
 
@@ -13,6 +14,7 @@ router.post('/lists', (req: Request, res: Response) => {
   const maxPos = db.prepare('SELECT COALESCE(MAX(position), -1) as max FROM lists').get() as any;
   const result = db.prepare('INSERT INTO lists (name, color, position) VALUES (?, ?, ?)').run(name, color || '#4285f4', maxPos.max + 1);
   const list = db.prepare('SELECT * FROM lists WHERE id = ?').get(result.lastInsertRowid);
+  emitEvent('list.created', list);
   res.status(201).json(list);
 });
 
@@ -24,7 +26,9 @@ router.put('/lists/:id', (req: Request, res: Response) => {
 });
 
 router.delete('/lists/:id', (req: Request, res: Response) => {
+  const list = db.prepare('SELECT * FROM lists WHERE id = ?').get(req.params.id);
   db.prepare('DELETE FROM lists WHERE id = ?').run(req.params.id);
+  emitEvent('list.deleted', list);
   res.status(204).end();
 });
 
