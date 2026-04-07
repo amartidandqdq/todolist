@@ -4,22 +4,28 @@ import { API, fetchJSON } from '../utils/api';
 
 export function useLists() {
   const [lists, setLists] = useState<TaskList[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
-    setLists(await fetchJSON(`${API}/lists`));
+    try {
+      setError(null);
+      setLists(await fetchJSON(`${API}/lists`));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Failed to load lists');
+    }
   }, []);
 
   useEffect(() => { load(); }, [load]);
 
-  const addList = async (name: string) => {
-    await fetchJSON(`${API}/lists`, { method: 'POST', body: JSON.stringify({ name }) });
-    await load();
-  };
+  const addList = useCallback(async (name: string) => {
+    try { await fetchJSON(`${API}/lists`, { method: 'POST', body: JSON.stringify({ name }) }); await load(); }
+    catch (e) { setError(e instanceof Error ? e.message : 'Failed to add list'); }
+  }, [load]);
 
-  const deleteList = async (id: number) => {
-    await fetchJSON(`${API}/lists/${id}`, { method: 'DELETE' });
-    await load();
-  };
+  const deleteList = useCallback(async (id: number) => {
+    try { await fetchJSON(`${API}/lists/${id}`, { method: 'DELETE' }); await load(); }
+    catch (e) { setError(e instanceof Error ? e.message : 'Failed to delete list'); }
+  }, [load]);
 
-  return { lists, addList, deleteList, reload: load };
+  return { lists, error, addList, deleteList, reload: load };
 }

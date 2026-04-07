@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { Task } from '../types';
 import { formatDate, recurrenceLabel } from '../utils/format';
 import SubtaskList from './SubtaskList';
@@ -11,7 +12,7 @@ interface Props {
   onAddSubtask: (parentId: number, title: string) => void;
 }
 
-export default function TaskItem({ task, onToggle, onDelete, onClick, onAddSubtask }: Props) {
+export default memo(function TaskItem({ task, onToggle, onDelete, onClick, onAddSubtask }: Props) {
   const dateStr = formatDate(task.due_date);
   const isOverdue = dateStr?.startsWith('Overdue');
   const recLabel = recurrenceLabel(task.recurrence_rule);
@@ -41,4 +42,4 @@ export default function TaskItem({ task, onToggle, onDelete, onClick, onAddSubta
       {!task.completed && <SubtaskInput taskId={task.id} onAdd={onAddSubtask} />}
     </div>
   );
-}
+});

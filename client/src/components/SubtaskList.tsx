@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { Task } from '../types';
 
 interface Props {
@@ -6,7 +7,7 @@ interface Props {
   onDelete: (id: number) => void;
 }
 
-export default function SubtaskList({ subtasks, onToggle, onDelete }: Props) {
+export default memo(function SubtaskList({ subtasks, onToggle, onDelete }: Props) {
   if (subtasks.length === 0) return null;
 
   return (
@@ -25,4 +26,4 @@ export default function SubtaskList({ subtasks, onToggle, onDelete }: Props) {
       ))}
     </div>
   );
-}
+});

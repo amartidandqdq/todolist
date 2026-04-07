@@ -6,8 +6,14 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const dbPath = path.join(__dirname, '..', 'data', 'todolist.db');
 
 const db = new Database(dbPath);
+
+// Performance pragmas
 db.pragma('journal_mode = WAL');
 db.pragma('foreign_keys = ON');
+db.pragma('synchronous = NORMAL');
+db.pragma('cache_size = -8000');
+db.pragma('busy_timeout = 5000');
+db.pragma('temp_store = MEMORY');
 
 db.exec(`
   CREATE TABLE IF NOT EXISTS lists (
@@ -34,6 +40,11 @@ db.exec(`
     FOREIGN KEY (list_id) REFERENCES lists(id) ON DELETE CASCADE,
     FOREIGN KEY (parent_id) REFERENCES tasks(id) ON DELETE CASCADE
   );
+
+  CREATE INDEX IF NOT EXISTS idx_tasks_list_id ON tasks(list_id);
+  CREATE INDEX IF NOT EXISTS idx_tasks_parent_id ON tasks(parent_id);
+  CREATE INDEX IF NOT EXISTS idx_tasks_completed ON tasks(list_id, completed, position);
+  CREATE INDEX IF NOT EXISTS idx_tasks_due_date ON tasks(due_date) WHERE due_date IS NOT NULL;
 
   INSERT OR IGNORE INTO lists (id, name, color, position) VALUES (1, 'My Tasks', '#4285f4', 0);
 `);
