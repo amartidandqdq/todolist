@@ -16,7 +16,8 @@
       "Bash(powershell.exe -Command \"git add -A; git status --short\")",
       "Bash(powershell.exe -Command \"git commit -m ''feat: Google Tasks parity — starred tasks, sort \\(My order/Date/Starred\\), date+time, repeat \\(day/week/month/year\\), Starred view, indent/unindent API, Material 3 dark theme, completed dates, keyboard shortcuts \\(Ctrl+/\\)''; git push origin master\")",
       "Bash(powershell.exe -Command \"git add -A; git commit -m ''feat: light/dark mode toggle with system preference detection and localStorage persistence''; git push origin master\")",
-      "Bash(powershell.exe -Command \"git add -A; git commit -m ''feat: inline edit, undo toast, search, calendar view, multi-select, swipe-to-complete, list menu, export/import, PWA, auto-refresh, tab badge, empty states''; git push origin master\")"
+      "Bash(powershell.exe -Command \"git add -A; git commit -m ''feat: inline edit, undo toast, search, calendar view, multi-select, swipe-to-complete, list menu, export/import, PWA, auto-refresh, tab badge, empty states''; git push origin master\")",
+      "Bash(powershell.exe -Command \"git add -A; git commit -m ''perf: optimize Docker for TrueNAS — memory limits, ZFS data paths, Watchtower auto-update, healthcheck, graceful shutdown, smaller image''; git push origin master\")"
     ]
   }
 }

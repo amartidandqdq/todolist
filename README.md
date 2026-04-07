@@ -62,6 +62,28 @@ cd todolist
 bash install.sh
 ```
 
+### Stockage sur ZFS (recommande)
+
+Le script detecte automatiquement ton pool ZFS et stocke les donnees dans `/mnt/<pool>/apps/todolist/data`. Tu peux aussi le configurer manuellement :
+
+```bash
+# Dans .env, change DATA_PATH pour pointer vers ton dataset
+DATA_PATH=/mnt/tank/apps/todolist/data
+```
+
+### Mises a jour automatiques (optionnel)
+
+Le script propose d'activer Watchtower pour des mises a jour auto toutes les 24h. Tu peux aussi l'activer manuellement :
+
+```bash
+cd ~/todolist
+docker compose --profile autoupdate up -d watchtower
+```
+
+### Limites ressources
+
+Par defaut l'app utilise max ~450MB RAM et 0.75 CPU. Suffisant pour un NAS domestique. Modifiable dans `docker-compose.yml` si besoin.
+
 ---
 
 ## Utilisation

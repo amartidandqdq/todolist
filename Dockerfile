@@ -12,24 +12,30 @@ WORKDIR /app
 COPY package.json package-lock.json* ./
 RUN npm ci --omit=dev --ignore-scripts 2>/dev/null || npm install --omit=dev
 
-# Stage 3: Runtime (minimal)
+# Stage 3: Runtime (minimal ~80MB)
 FROM node:20-alpine
 WORKDIR /app
 
-RUN apk add --no-cache tini && npm install -g tsx && rm -rf /root/.npm
+RUN apk add --no-cache tini curl && \
+    npm install -g tsx && \
+    rm -rf /root/.npm /tmp/* /var/cache/apk/*
 
 COPY --from=server-deps /app/node_modules ./node_modules
 COPY --from=client-build /app/client/dist ./client/dist
-COPY package.json ./
+COPY package.json openapi.yaml ./
 COPY server/ ./server/
 
-RUN mkdir -p /app/data && chown -R node:node /app/data
+RUN mkdir -p /app/data && chown -R node:node /app
 USER node
 
 ENV NODE_ENV=production PORT=3000
+
 EXPOSE 3000
 
-HEALTHCHECK --interval=30s --timeout=3s CMD wget -qO- http://localhost:3000/api/lists || exit 1
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+  CMD curl -fs http://localhost:3000/api/health || exit 1
+
+STOPSIGNAL SIGTERM
 
 ENTRYPOINT ["/sbin/tini", "--"]
 CMD ["tsx", "server/index.ts"]

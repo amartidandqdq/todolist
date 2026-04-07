@@ -9,35 +9,41 @@ NC='\033[0m'
 cd "$(dirname "$0")"
 mkdir -p backups
 
-DB_FILE="data/todolist.db"
+# Resolve data path from .env or default
+DATA_PATH="./data"
+if [ -f .env ]; then
+  ENVPATH=$(grep DATA_PATH .env 2>/dev/null | cut -d= -f2)
+  [ -n "$ENVPATH" ] && DATA_PATH="$ENVPATH"
+fi
+
+DB_FILE="$DATA_PATH/todolist.db"
 DATE=$(date +%Y-%m-%d_%H%M%S)
 
 # Restore mode
 if [ "$1" = "restore" ] && [ -n "$2" ]; then
   if [ ! -f "$2" ]; then
-    echo -e "${RED}Fichier introuvable : $2${NC}"
+    echo -e "${RED}File not found: $2${NC}"
     exit 1
   fi
-  echo -e "${YELLOW}Restauration depuis $2...${NC}"
+  echo -e "${YELLOW}Restoring from $2...${NC}"
   docker compose stop app 2>/dev/null || true
   cp "$2" "$DB_FILE"
   docker compose start app 2>/dev/null || true
-  echo -e "${GREEN}Restauration terminee.${NC}"
+  echo -e "${GREEN}Restored.${NC}"
   exit 0
 fi
 
 # Backup mode
 if [ ! -f "$DB_FILE" ]; then
-  echo -e "${YELLOW}Pas de base de donnees a sauvegarder.${NC}"
+  echo -e "${YELLOW}No database to backup.${NC}"
   exit 0
 fi
 
 BACKUP="backups/todolist-${DATE}.db"
 cp "$DB_FILE" "$BACKUP"
+echo -e "${GREEN}Backup: ${BACKUP} ($(du -h "$BACKUP" | cut -f1))${NC}"
 
-echo -e "${GREEN}Sauvegarde creee : ${BACKUP}${NC}"
-
-# Keep only last 10 backups
+# Keep last 10
 ls -t backups/todolist-*.db 2>/dev/null | tail -n +11 | xargs -r rm --
 TOTAL=$(ls backups/todolist-*.db 2>/dev/null | wc -l)
-echo "Sauvegardes conservees : ${TOTAL}/10"
+echo "Kept: ${TOTAL}/10 backups"

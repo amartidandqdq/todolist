@@ -15,29 +15,67 @@ services:
       - net_admin
       - sys_module
     restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          cpus: "0.25"
     logging:
       driver: json-file
       options:
-        max-size: "5m"
-        max-file: "3"
+        max-size: "2m"
+        max-file: "2"
 
   app:
     build: .
     container_name: todolist-app
     network_mode: service:tailscale
     volumes:
-      - ./data:/app/data
+      - ${DATA_PATH:-./data}:/app/data
     environment:
       - PORT=3000
       - NODE_ENV=production
     depends_on:
-      - tailscale
+      tailscale:
+        condition: service_started
     restart: always
+    stop_grace_period: 10s
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: "0.5"
     logging:
       driver: json-file
       options:
-        max-size: "5m"
-        max-file: "3"
+        max-size: "2m"
+        max-file: "2"
+
+  # Auto-update: checks for new image every 24h
+  watchtower:
+    image: containrrr/watchtower
+    container_name: todolist-watchtower
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - WATCHTOWER_CLEANUP=true
+      - WATCHTOWER_POLL_INTERVAL=86400
+      - WATCHTOWER_SCOPE=todolist
+    labels:
+      - com.centurylinklabs.watchtower.scope=todolist
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 64M
+          cpus: "0.1"
+    logging:
+      driver: json-file
+      options:
+        max-size: "1m"
+        max-file: "1"
+    profiles:
+      - autoupdate
 
 volumes:
   tailscale-state:
