@@ -1,6 +1,6 @@
 # TodoList
 
-Clone de Google Tasks auto-heberge. Tourne sur ton NAS TrueNAS Scale via Docker, accessible de partout grace a Tailscale.
+Clone de Google Tasks auto-heberge. Tourne sur ton NAS TrueNAS via Docker, accessible de partout via Tailscale.
 
 ## Fonctionnalites
 
@@ -10,150 +10,203 @@ Clone de Google Tasks auto-heberge. Tourne sur ton NAS TrueNAS Scale via Docker,
 - Taches favorites (etoiles) + vue Starred
 - Tri : Mon ordre / Date / Favorites
 - Glisser-deposer pour reorganiser
-- **Recherche** dans les taches
-- **Calendrier** mini-vue avec points sur les jours avec taches
-- **Edition inline** : double-clic sur le titre pour editer sur place
-- **Multi-selection** : Ctrl+clic pour selectionner, actions groupees (completer/supprimer)
-- **Swipe** vers la droite pour completer (mobile)
-- **Undo** : toast "Task completed" avec bouton Annuler (5s)
-- **Renommer/supprimer** les listes (menu 3 points)
-- **Export/Import** JSON depuis la sidebar
-- **Mode jour/nuit** : toggle soleil/lune, suit les preferences systeme
-- **PWA** : installable comme app sur telephone/PC
-- **Auto-refresh** toutes les 30s pour sync multi-appareils
-- **Badge onglet** : nombre de taches dans le titre du navigateur
-- Interface responsive, dark/light mode
-- Accessible en HTTPS depuis n'importe quel appareil Tailscale
+- Recherche dans les taches
+- Calendrier mini-vue avec points sur les jours avec taches
+- Edition inline : double-clic sur le titre pour editer sur place
+- Multi-selection : Ctrl+clic pour selectionner, actions groupees
+- Swipe vers la droite pour completer (mobile)
+- Undo : toast avec bouton Annuler (5s)
+- Renommer/supprimer les listes (menu 3 points)
+- Export/Import JSON depuis la sidebar
+- Mode jour/nuit : toggle soleil/lune + preferences systeme
+- PWA : installable comme app sur telephone/PC
+- Auto-refresh toutes les 30s pour sync multi-appareils
+- Badge onglet : nombre de taches dans le titre du navigateur
+- Interface responsive
+- Accessible en HTTPS via Tailscale
 
 ---
 
-## Installation sur TrueNAS Scale
+## Installation sur TrueNAS
 
-### Etape 1 : Installer Tailscale (si pas deja fait)
+### Etape 1 : Installer Tailscale
 
-1. Va sur [tailscale.com](https://tailscale.com) et cree un compte gratuit
-2. Installe Tailscale sur ton telephone/PC depuis [tailscale.com/download](https://tailscale.com/download)
-3. Connecte-toi sur chaque appareil
+1. Cree un compte gratuit sur [tailscale.com](https://tailscale.com)
+2. Installe Tailscale sur tes appareils depuis [tailscale.com/download](https://tailscale.com/download)
 
 ### Etape 2 : Generer une cle Tailscale
 
 1. Va sur [login.tailscale.com/admin/settings/keys](https://login.tailscale.com/admin/settings/keys)
-2. Clique sur **"Generate auth key"**
-3. Coche **"Reusable"** (important !)
-4. Copie la cle qui commence par `tskey-auth-...`
+2. Clique **"Generate auth key"** → coche **"Reusable"**
+3. Copie la cle `tskey-auth-...`
 
-### Etape 3 : Installer TodoList sur le NAS
+### Etape 3 : Installer TodoList
 
-Ouvre le **Shell** de TrueNAS (interface web > System > Shell) et lance :
+Ouvre le **Shell** TrueNAS (interface web > System > Shell) :
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/amartidandqdq/todolist/master/install.sh | bash
 ```
 
-Quand le script te demande ta cle Tailscale, colle-la.
-
-L'app sera accessible a : `https://todolist.<ton-tailnet>.ts.net`
+Colle ta cle Tailscale quand demande. Accessible a : `https://todolist.<ton-tailnet>.ts.net`
 
 ### Installation manuelle
 
 ```bash
 git clone https://github.com/amartidandqdq/todolist.git
-cd todolist
-bash install.sh
+cd todolist && bash install.sh
 ```
 
-### Stockage sur ZFS (recommande)
+### Stockage ZFS
 
-Le script detecte automatiquement ton pool ZFS et stocke les donnees dans `/mnt/<pool>/apps/todolist/data`. Tu peux aussi le configurer manuellement :
+Le script detecte automatiquement ton pool ZFS. Configurable dans `.env` :
 
 ```bash
-# Dans .env, change DATA_PATH pour pointer vers ton dataset
 DATA_PATH=/mnt/tank/apps/todolist/data
 ```
 
-### Mises a jour automatiques (optionnel)
-
-Le script propose d'activer Watchtower pour des mises a jour auto toutes les 24h. Tu peux aussi l'activer manuellement :
+### Mises a jour automatiques
 
 ```bash
 cd ~/todolist
 docker compose --profile autoupdate up -d watchtower
 ```
 
-### Limites ressources
+### Ressources
 
-Par defaut l'app utilise max ~450MB RAM et 0.75 CPU. Suffisant pour un NAS domestique. Modifiable dans `docker-compose.yml` si besoin.
+~450MB RAM max, 0.75 CPU. Modifiable dans `docker-compose.yml`.
 
 ---
 
 ## Utilisation
 
-### Acceder a l'app
-
-- Ouvre `https://todolist.<ton-tailnet>.ts.net` dans ton navigateur
-- Sur telephone : ajoute la page en raccourci sur l'ecran d'accueil (c'est une PWA)
-
 ### Raccourcis
 
 | Action | Raccourci |
 |--------|-----------|
-| Nouvelle tache | Tape dans le champ + Entree |
-| Editer le titre | Double-clic sur le titre |
-| Completer | Clic sur le cercle / Swipe droite (mobile) |
-| Favori | Clic sur l'etoile |
-| Multi-selection | Ctrl+clic sur plusieurs taches |
-| Rechercher | Clic sur la loupe |
-| Aide raccourcis | Ctrl+/ |
+| Nouvelle tache | Champ + Entree |
+| Editer titre | Double-clic |
+| Completer | Cercle / Swipe droite (mobile) |
+| Favori | Etoile |
+| Multi-selection | Ctrl+clic |
+| Rechercher | Loupe |
+| Aide | Ctrl+/ |
 
 ### Export / Import
 
-Dans la sidebar en bas :
-- **Export** : telecharge un fichier JSON avec toutes tes donnees
-- **Import** : charge un fichier JSON de sauvegarde
+Sidebar en bas : boutons Export (JSON) et Import.
 
 ---
 
-## Sauvegardes
+## Maintenance
 
 ```bash
 cd ~/todolist
 bash backup.sh                              # Sauvegarder
 bash backup.sh restore backups/fichier.db   # Restaurer
-```
-
-## Mise a jour
-
-```bash
-cd ~/todolist
-bash update.sh
-```
-
-## Depannage
-
-```bash
-cd ~/todolist && docker compose logs        # Voir les logs
-docker compose ps                           # Verifier les conteneurs
+bash update.sh                              # Mettre a jour
+docker compose logs                         # Logs
 docker compose restart                      # Relancer
 ```
 
 ---
 
-## Pour les curieux
+## Architecture
 
-| Composant | Technologie | Role |
-|-----------|------------|------|
-| Interface | React + TypeScript + dnd-kit | Ce que tu vois dans le navigateur |
-| Serveur | Node.js + Express | Gere les requetes et sert l'interface |
-| Base de donnees | SQLite (sql.js) | Stocke tes taches (un seul fichier) |
-| Conteneur | Docker | Emballe tout pour que ca tourne partout |
-| Reseau | Tailscale | Connexion securisee entre tes appareils |
+```
+server/
+  index.ts                   Express app entry, barrel imports
+  db/
+    types.ts                 DatabaseAdapter interface (DI-ready)
+    wrapper.ts               sql.js adapter (better-sqlite3 API)
+    schema.ts                Tables, indexes, migrations
+    index.ts                 Barrel: singleton + schema init
+  routes/
+    index.ts                 Barrel: all 7 routers
+    lists.ts                 CRUD listes
+    tasks.ts                 CRUD taches + star/complete/indent
+    subtasks.ts              CRUD sous-taches
+    batch.ts                 Operations en lot
+    webhooks.ts              Abonnements webhook
+    health.ts                Health check
+    export.ts                Export/import JSON
+  utils/
+    index.ts                 Barrel: recurrence + webhooks
+    recurrence.ts            Calcul prochaine date recurrente
+    webhooks.ts              Dispatch events aux subscribers
+  plugins/                   Auto-loaded .ts files
+  middleware/                Reserved
 
-### API pour agents IA
+client/src/
+  types.ts                   Task, TaskList, SortMode, ViewMode
+  App.tsx                    Root: state, undo, search, refresh
+  utils/
+    index.ts                 Barrel
+    api.ts                   fetchJSON(), ApiError
+    format.ts                formatDate(), recurrenceLabel()
+  hooks/
+    index.ts                 Barrel
+    useLists.ts              CRUD listes
+    useTasks.ts              CRUD taches (filter/sort/search)
+    useTheme.ts              Light/dark/system
+  components/
+    index.ts                 Barrel: 14 composants
+    Sidebar.tsx              Nav, theme, export/import
+    TaskList.tsx              DnD, sort, search, calendar, batch
+    TaskDetail.tsx            Panel edition
+    TaskItem.tsx              Ligne tache (memo, inline edit, swipe)
+    SortableTask.tsx          Wrapper DnD
+    SubtaskList.tsx           Sous-taches (memo)
+    SubtaskInput.tsx          Ajout sous-tache
+    CompletedSection.tsx      Section completees
+    AddTask.tsx               Input rapide (memo)
+    SearchBar.tsx             Recherche
+    CalendarView.tsx          Mini calendrier
+    ListMenu.tsx              Menu 3 points
+    ExportImport.tsx          Boutons export/import
+    UndoToast.tsx             Toast annulation
+  styles/
+    globals.css               Importe tout
+    variables.css             Tokens light/dark
+    base.css                  Reset, body
+    sidebar.css               Sidebar, list menu
+    layout.css                Zone principale, sort, add task
+    task-item.css             Tache, checkbox, etoile, subtasks
+    detail.css                Panel detail
+    widgets.css               Toast, search, batch, calendrier
+    responsive.css            Mobile/tablet
+```
 
-- OpenAPI spec : `GET /api/openapi.yaml`
-- CLI : `./cli.sh add "Ma tache" --due 2026-04-10`
-- Webhooks : `POST /api/webhooks`
-- Batch : `POST/PUT/DELETE /api/tasks/batch`
-- Export : `GET /api/export`
-- Import : `POST /api/import`
-- Plugins : deposer un `.ts` dans `server/plugins/`
+### Conventions
+
+- 1 fichier = 1 responsabilite (<50 lignes)
+- `index.ts` barrel dans chaque dossier
+- JSDoc sur chaque export
+- Types dans `types.ts`, jamais dans hooks/composants
+- DB adapter decouple via interface `DatabaseAdapter`
+
+---
+
+## API pour agents IA
+
+| Endpoint | Description |
+|----------|------------|
+| `GET /api/openapi.yaml` | Spec OpenAPI 3.1 complete |
+| `GET /api/health` | Status + compteurs |
+| `GET /api/export` | Export JSON complet |
+| `POST /api/import` | Import backup JSON |
+| `POST/PUT/DELETE /api/tasks/batch` | Operations en lot |
+| `POST /api/webhooks` | S'abonner aux events |
+| `./cli.sh` | CLI shell pour agents terminal |
+| `server/plugins/*.ts` | Plugins auto-loaded |
+
+---
+
+## Tech Stack
+
+| Couche | Tech |
+|--------|------|
+| Frontend | React 18, TypeScript, Vite, dnd-kit |
+| Backend | Node.js, Express, sql.js (SQLite pur JS) |
+| Infra | Docker, Tailscale, Watchtower |
+| Standards | OpenAPI 3.1, PWA, JSDoc |
