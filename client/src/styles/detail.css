@@ -1,32 +1,53 @@
 .detail-panel {
-  width: 340px;
-  min-width: 340px;
+  width: 360px; min-width: 360px;
   background: var(--bg-surface);
   border-left: 1px solid var(--border);
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+  display: flex; flex-direction: column;
   overflow-y: auto;
 }
-.detail-panel h3 { font-size: 16px; font-weight: 600; }
-.detail-panel label { font-size: 12px; color: var(--text-muted); display: block; margin-bottom: 4px; }
-.detail-panel textarea { min-height: 80px; resize: vertical; }
-.detail-panel select {
-  background: var(--bg-input);
-  color: var(--text);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 8px 12px;
-  width: 100%;
+.detail-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 16px; border-bottom: 1px solid var(--border);
 }
-.detail-close { align-self: flex-end; color: var(--text-dim); font-size: 20px; }
-.detail-close:hover { color: var(--text); }
-.detail-save {
-  background: var(--primary);
-  color: white;
-  padding: 8px 16px;
-  border-radius: var(--radius);
-  font-weight: 500;
+.detail-header button {
+  color: var(--text-secondary); font-size: 20px; padding: 4px;
 }
-.detail-save:hover { background: var(--primary-hover); }
+.detail-header button:hover { color: var(--text); }
+.detail-body { padding: 16px; flex: 1; display: flex; flex-direction: column; gap: 20px; }
+.detail-field label {
+  font-size: 12px; color: var(--text-secondary);
+  margin-bottom: 6px; display: block; font-weight: 500;
+  text-transform: uppercase; letter-spacing: 0.5px;
+}
+.detail-field input, .detail-field textarea, .detail-field select {
+  background: var(--bg-input); border: 1px solid var(--border);
+}
+.detail-field textarea { min-height: 100px; resize: vertical; }
+
+.detail-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 0; border-bottom: 1px solid var(--border);
+  cursor: pointer;
+}
+.detail-row .icon { color: var(--text-secondary); font-size: 20px; width: 24px; text-align: center; }
+.detail-row .value { flex: 1; font-size: 14px; }
+.detail-row .value.placeholder { color: var(--text-dim); }
+
+.detail-actions {
+  padding: 16px; border-top: 1px solid var(--border);
+  display: flex; gap: 8px;
+}
+.detail-actions .save-btn {
+  flex: 1; background: var(--primary-dark); color: white;
+  padding: 10px; border-radius: var(--radius); font-weight: 500;
+}
+.detail-actions .save-btn:hover { opacity: 0.9; }
+.detail-actions .delete-btn {
+  color: var(--danger); padding: 10px;
+}
+
+.repeat-options { padding: 8px 0; }
+.repeat-options label { font-size: 13px; color: var(--text-secondary); margin-bottom: 4px; display: block; }
+.repeat-row { display: flex; gap: 8px; align-items: center; margin-top: 6px; }
+.repeat-row input[type="number"] { width: 60px; text-align: center; }
+.repeat-row select { flex: 1; }

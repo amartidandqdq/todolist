@@ -1,23 +1,29 @@
-import { memo } from 'react';
+import { memo, useState } from 'react';
 import TaskItem from './TaskItem';
 import { Task } from '../types';
 
 interface Props {
   tasks: Task[];
   onToggle: (id: number) => void;
+  onStar: (id: number) => void;
   onDelete: (id: number) => void;
   onClick: (task: Task) => void;
   onAddSubtask: (parentId: number, title: string) => void;
 }
 
-export default memo(function CompletedSection({ tasks, onToggle, onDelete, onClick, onAddSubtask }: Props) {
+export default memo(function CompletedSection({ tasks, onToggle, onStar, onDelete, onClick, onAddSubtask }: Props) {
+  const [open, setOpen] = useState(false);
   if (tasks.length === 0) return null;
 
   return (
     <div className="completed-section">
-      <h4>Completed</h4>
-      {tasks.map((task) => (
-        <TaskItem key={task.id} task={task} onToggle={onToggle} onDelete={onDelete} onClick={onClick} onAddSubtask={onAddSubtask} />
+      <button className="completed-toggle" onClick={() => setOpen(!open)}>
+        <span className={`arrow ${open ? 'open' : ''}`}>&#x25B6;</span>
+        <span>Completed ({tasks.length})</span>
+      </button>
+      {open && tasks.map((task) => (
+        <TaskItem key={task.id} task={task} onToggle={onToggle} onStar={onStar}
+          onDelete={onDelete} onClick={onClick} onAddSubtask={onAddSubtask} />
       ))}
     </div>
   );

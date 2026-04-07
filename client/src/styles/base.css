@@ -1,41 +1,31 @@
+@import url('https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Roboto:wght@400;500&display=swap');
+
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: var(--font);
   background: var(--bg);
   color: var(--text);
   min-height: 100vh;
+  font-size: 14px;
 }
 
-#root {
-  display: flex;
-  height: 100vh;
-}
+#root { display: flex; height: 100vh; }
 
 button {
-  cursor: pointer;
-  border: none;
-  background: none;
-  color: var(--text);
-  font-family: inherit;
-  font-size: inherit;
+  cursor: pointer; border: none; background: none;
+  color: var(--text); font-family: inherit; font-size: inherit;
 }
 
-input, textarea {
-  font-family: inherit;
-  font-size: inherit;
-  color: var(--text);
-  background: var(--bg-input);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 8px 12px;
-  outline: none;
-  width: 100%;
+input, textarea, select {
+  font-family: inherit; font-size: 14px;
+  color: var(--text); background: var(--bg-input);
+  border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 10px 12px; outline: none; width: 100%;
 }
-input:focus, textarea:focus {
-  border-color: var(--primary);
-}
+input:focus, textarea:focus, select:focus { border-color: var(--primary); }
 
-::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar { width: 8px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--border-light); }

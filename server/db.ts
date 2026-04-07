@@ -104,6 +104,11 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_tasks_completed ON tasks(list_id, completed, position);
 `);
 
+// Migration: add starred column
+try { db.exec('ALTER TABLE tasks ADD COLUMN starred INTEGER DEFAULT 0'); } catch (_) {}
+// Migration: add due_time column
+try { db.exec('ALTER TABLE tasks ADD COLUMN due_time TEXT'); } catch (_) {}
+
 // Seed default list
 const existing = db.prepare('SELECT id FROM lists WHERE id = 1').get();
 if (!existing) db.prepare('INSERT INTO lists (id, name, color, position) VALUES (?, ?, ?, ?)').run(1, 'My Tasks', '#4285f4', 0);

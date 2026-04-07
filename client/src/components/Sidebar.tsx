@@ -1,68 +1,66 @@
 import { useState } from 'react';
-import { TaskList } from '../types';
+import { TaskList, ViewMode } from '../types';
 
 interface Props {
   lists: TaskList[];
-  activeId: number;
-  onSelect: (id: number) => void;
+  activeListId: number;
+  viewMode: ViewMode;
+  onSelectList: (id: number) => void;
+  onSelectView: (view: ViewMode) => void;
   onAdd: (name: string) => void;
   onDelete: (id: number) => void;
   taskCounts: Record<number, number>;
 }
 
-export default function Sidebar({ lists, activeId, onSelect, onAdd, onDelete, taskCounts }: Props) {
+export default function Sidebar({ lists, activeListId, viewMode, onSelectList, onSelectView, onAdd, onDelete, taskCounts }: Props) {
   const [adding, setAdding] = useState(false);
   const [name, setName] = useState('');
 
   const handleAdd = () => {
-    if (name.trim()) {
-      onAdd(name.trim());
-      setName('');
-      setAdding(false);
-    }
+    if (name.trim()) { onAdd(name.trim()); setName(''); setAdding(false); }
   };
 
   return (
     <nav className="sidebar">
-      <h1>TodoList</h1>
-      <ul className="sidebar-list">
+      <div className="sidebar-header">Tasks</div>
+
+      <div className="sidebar-section">
+        <div className={`sidebar-item ${viewMode === 'starred' ? 'active' : ''}`} onClick={() => onSelectView('starred')}>
+          <span className="icon">&#9733;</span>
+          <span className="label">Starred</span>
+        </div>
+      </div>
+
+      <div className="sidebar-section">
         {lists.map((list) => (
-          <li
-            key={list.id}
-            className={`sidebar-item ${list.id === activeId ? 'active' : ''}`}
-            onClick={() => onSelect(list.id)}
+          <div key={list.id}
+            className={`sidebar-item ${viewMode === 'list' && list.id === activeListId ? 'active' : ''}`}
+            onClick={() => { onSelectList(list.id); onSelectView('list'); }}
           >
             <span className="sidebar-dot" style={{ background: list.color }} />
-            <span>{list.name}</span>
-            <span className="sidebar-count">{taskCounts[list.id] || 0}</span>
-            {lists.length > 1 && (
-              <button
-                className="task-delete"
-                style={{ opacity: list.id === activeId ? 1 : undefined }}
-                onClick={(e) => { e.stopPropagation(); onDelete(list.id); }}
-              >
-                ×
-              </button>
-            )}
-          </li>
+            <span className="label">{list.name}</span>
+            <span className="count">{taskCounts[list.id] || ''}</span>
+          </div>
         ))}
-      </ul>
-      {adding ? (
-        <div style={{ padding: '8px 16px' }}>
-          <input
-            autoFocus
-            placeholder="List name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
-            onBlur={() => { if (!name.trim()) setAdding(false); }}
-          />
-        </div>
-      ) : (
-        <div className="sidebar-add" onClick={() => setAdding(true)}>
-          <span>+</span> New list
-        </div>
-      )}
+      </div>
+
+      <div className="sidebar-section">
+        {adding ? (
+          <div style={{ padding: '4px 16px' }}>
+            <input autoFocus placeholder="New list" value={name}
+              onChange={(e) => setName(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') handleAdd(); if (e.key === 'Escape') setAdding(false); }}
+              onBlur={() => { if (!name.trim()) setAdding(false); }}
+              style={{ fontSize: 13, padding: '6px 10px' }}
+            />
+          </div>
+        ) : (
+          <div className="sidebar-add" onClick={() => setAdding(true)}>
+            <span className="icon">+</span>
+            <span>Create new list</span>
+          </div>
+        )}
+      </div>
     </nav>
   );
 }

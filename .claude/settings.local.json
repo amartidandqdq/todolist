@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__Claude_Preview__preview_start",
+      "Read(//c/Program Files/nodejs/**)",
+      "Bash(export PATH=\"/c/Program Files/nodejs:$PATH\")",
+      "Bash(npx vite:*)",
+      "Bash(powershell.exe -Command \"Stop-Process -Id \\(Get-NetTCPConnection -LocalPort 3000 -ErrorAction SilentlyContinue\\).OwningProcess -Force -ErrorAction SilentlyContinue\")",
+      "Bash(powershell.exe -Command \"git add package.json server/db.ts server/routes/webhooks.ts .claude/launch.json; git status --short\")",
+      "Bash(powershell.exe -Command \"git add package-lock.json client/package-lock.json; git commit -m ''feat: switch to sql.js \\(pure JS SQLite, zero native deps\\), add launch.json for preview''; git push origin master\")",
+      "WebSearch",
+      "WebFetch(domain:chromestory.com)",
+      "WebFetch(domain:thedigitalprojectmanager.com)",
+      "WebFetch(domain:support.google.com)",
+      "WebFetch(domain:defkey.com)",
+      "Bash(powershell.exe -Command \"git add -A; git status --short\")"
+    ]
+  }
+}

@@ -5,8 +5,10 @@ export interface Task {
   title: string;
   notes: string;
   due_date: string | null;
+  due_time: string | null;
   completed: number;
   completed_at: string | null;
+  starred: number;
   position: number;
   recurrence_rule: string | null;
   created_at: string;
@@ -21,3 +23,6 @@ export interface TaskList {
   position: number;
   created_at: string;
 }
+
+export type SortMode = 'my_order' | 'date' | 'starred';
+export type ViewMode = 'list' | 'all' | 'starred';
