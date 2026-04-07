@@ -52,3 +52,38 @@
 }
 .sidebar-add:hover { color: var(--primary); }
 .sidebar-add .icon { font-size: 20px; width: 24px; text-align: center; }
+
+/* List menu */
+.list-menu-wrapper { position: relative; margin-left: auto; }
+.list-menu-btn {
+  opacity: 0; color: var(--text-dim); padding: 2px 6px;
+  font-size: 16px; border-radius: 4px;
+}
+.sidebar-item:hover .list-menu-btn { opacity: 1; }
+.list-menu-btn:hover { color: var(--text); background: var(--bg-hover); }
+.list-menu-dropdown {
+  position: absolute; right: 0; top: 24px;
+  background: var(--bg-surface-high); border: 1px solid var(--border);
+  border-radius: var(--radius); box-shadow: var(--shadow);
+  z-index: 50; min-width: 140px; padding: 4px 0;
+}
+.list-menu-dropdown button {
+  display: block; width: 100%; padding: 8px 14px;
+  font-size: 13px; text-align: left;
+}
+.list-menu-dropdown button:hover { background: var(--bg-hover); }
+.list-menu-dropdown button.danger { color: var(--danger); }
+.list-rename-input {
+  font-size: 13px; padding: 4px 8px; width: 100%;
+  background: var(--bg-input); border: 1px solid var(--primary);
+}
+
+/* Export/Import */
+.export-import {
+  display: flex; gap: 4px; padding: 4px 16px;
+}
+.export-import button {
+  flex: 1; font-size: 12px; padding: 6px 8px;
+  color: var(--text-secondary); border-radius: var(--radius);
+}
+.export-import button:hover { background: var(--bg-hover); color: var(--text); }

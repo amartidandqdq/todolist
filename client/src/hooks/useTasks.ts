@@ -6,9 +6,10 @@ interface UseTasksOpts {
   listId?: number;
   starred?: boolean;
   sort?: SortMode;
+  search?: string;
 }
 
-export function useTasks({ listId, starred, sort }: UseTasksOpts) {
+export function useTasks({ listId, starred, sort, search }: UseTasksOpts) {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -20,10 +21,11 @@ export function useTasks({ listId, starred, sort }: UseTasksOpts) {
       if (listId) params.set('list_id', String(listId));
       if (starred) params.set('starred', 'true');
       if (sort) params.set('sort', sort);
+      if (search) params.set('q', search);
       setTasks(await fetchJSON<Task[]>(`${API}/tasks?${params}`));
     } catch (e) { setError(e instanceof Error ? e.message : 'Failed to load'); }
     finally { setLoading(false); }
-  }, [listId, starred, sort]);
+  }, [listId, starred, sort, search]);
 
   useEffect(() => { load(); }, [load]);
 

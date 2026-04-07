@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { TaskList, ViewMode } from '../types';
+import ListMenu from './ListMenu';
+import ExportImport from './ExportImport';
 
 interface Props {
   lists: TaskList[];
@@ -8,13 +10,15 @@ interface Props {
   onSelectList: (id: number) => void;
   onSelectView: (view: ViewMode) => void;
   onAdd: (name: string) => void;
+  onRename: (id: number, name: string) => void;
   onDelete: (id: number) => void;
   taskCounts: Record<number, number>;
   theme: string;
   onToggleTheme: () => void;
+  onImported: () => void;
 }
 
-export default function Sidebar({ lists, activeListId, viewMode, onSelectList, onSelectView, onAdd, onDelete, taskCounts, theme, onToggleTheme }: Props) {
+export default function Sidebar({ lists, activeListId, viewMode, onSelectList, onSelectView, onAdd, onRename, onDelete, taskCounts, theme, onToggleTheme, onImported }: Props) {
   const [adding, setAdding] = useState(false);
   const [name, setName] = useState('');
 
@@ -28,7 +32,7 @@ export default function Sidebar({ lists, activeListId, viewMode, onSelectList, o
     <nav className="sidebar">
       <div className="sidebar-header">
         <span>Tasks</span>
-        <button className="theme-toggle" onClick={onToggleTheme} title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}>
+        <button className="theme-toggle" onClick={onToggleTheme} title={isDark ? 'Light mode' : 'Dark mode'}>
           {isDark ? '\u2600' : '\u263E'}
         </button>
       </div>
@@ -49,6 +53,7 @@ export default function Sidebar({ lists, activeListId, viewMode, onSelectList, o
             <span className="sidebar-dot" style={{ background: list.color }} />
             <span className="label">{list.name}</span>
             <span className="count">{taskCounts[list.id] || ''}</span>
+            <ListMenu listId={list.id} listName={list.name} onRename={onRename} onDelete={onDelete} canDelete={lists.length > 1} />
           </div>
         ))}
       </div>
@@ -69,6 +74,10 @@ export default function Sidebar({ lists, activeListId, viewMode, onSelectList, o
             <span>Create new list</span>
           </div>
         )}
+      </div>
+
+      <div className="sidebar-section" style={{ marginTop: 'auto' }}>
+        <ExportImport onImported={onImported} />
       </div>
     </nav>
   );

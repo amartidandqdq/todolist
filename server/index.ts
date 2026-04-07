@@ -9,6 +9,7 @@ import subtaskRoutes from './routes/subtasks.js';
 import batchRoutes from './routes/batch.js';
 import webhookRoutes from './routes/webhooks.js';
 import healthRoutes from './routes/health.js';
+import exportRoutes from './routes/export.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -31,6 +32,7 @@ app.use('/api', taskRoutes);
 app.use('/api', batchRoutes);
 app.use('/api', subtaskRoutes);
 app.use('/api', webhookRoutes);
+app.use('/api', exportRoutes);
 
 // Serve OpenAPI spec
 const specPath = path.join(__dirname, '..', 'openapi.yaml');

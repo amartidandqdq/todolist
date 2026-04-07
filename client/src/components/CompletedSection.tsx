@@ -8,10 +8,11 @@ interface Props {
   onStar: (id: number) => void;
   onDelete: (id: number) => void;
   onClick: (task: Task) => void;
+  onInlineEdit: (id: number, title: string) => void;
   onAddSubtask: (parentId: number, title: string) => void;
 }
 
-export default memo(function CompletedSection({ tasks, onToggle, onStar, onDelete, onClick, onAddSubtask }: Props) {
+export default memo(function CompletedSection({ tasks, onToggle, onStar, onDelete, onClick, onInlineEdit, onAddSubtask }: Props) {
   const [open, setOpen] = useState(false);
   if (tasks.length === 0) return null;
 
@@ -23,7 +24,7 @@ export default memo(function CompletedSection({ tasks, onToggle, onStar, onDelet
       </button>
       {open && tasks.map((task) => (
         <TaskItem key={task.id} task={task} onToggle={onToggle} onStar={onStar}
-          onDelete={onDelete} onClick={onClick} onAddSubtask={onAddSubtask} />
+          onDelete={onDelete} onClick={onClick} onInlineEdit={onInlineEdit} onAddSubtask={onAddSubtask} />
       ))}
     </div>
   );

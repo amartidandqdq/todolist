@@ -5,11 +5,14 @@ import { Task } from '../types';
 
 interface Props {
   task: Task;
+  selected?: boolean;
   onToggle: (id: number) => void;
   onStar: (id: number) => void;
   onDelete: (id: number) => void;
   onClick: (task: Task) => void;
+  onInlineEdit: (id: number, title: string) => void;
   onAddSubtask: (parentId: number, title: string) => void;
+  onSelect?: (id: number, multi: boolean) => void;
 }
 
 export default function SortableTask({ task, ...props }: Props) {

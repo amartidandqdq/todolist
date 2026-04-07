@@ -2,14 +2,28 @@
 
 Clone de Google Tasks auto-heberge. Tourne sur ton NAS TrueNAS Scale via Docker, accessible de partout grace a Tailscale.
 
-## Ce que ca fait
+## Fonctionnalites
 
-- Creer plusieurs listes de taches (travail, perso, courses...)
-- Taches avec dates, notes, sous-taches
-- Taches recurrentes (tous les jours, semaines, mois)
+- Plusieurs listes de taches (travail, perso, courses...)
+- Taches avec dates, heures, notes, sous-taches
+- Taches recurrentes (jour/semaine/mois/annee + intervalle)
+- Taches favorites (etoiles) + vue Starred
+- Tri : Mon ordre / Date / Favorites
 - Glisser-deposer pour reorganiser
-- Interface sombre, responsive (marche sur telephone)
-- Accessible en HTTPS depuis n'importe quel appareil sur ton reseau Tailscale
+- **Recherche** dans les taches
+- **Calendrier** mini-vue avec points sur les jours avec taches
+- **Edition inline** : double-clic sur le titre pour editer sur place
+- **Multi-selection** : Ctrl+clic pour selectionner, actions groupees (completer/supprimer)
+- **Swipe** vers la droite pour completer (mobile)
+- **Undo** : toast "Task completed" avec bouton Annuler (5s)
+- **Renommer/supprimer** les listes (menu 3 points)
+- **Export/Import** JSON depuis la sidebar
+- **Mode jour/nuit** : toggle soleil/lune, suit les preferences systeme
+- **PWA** : installable comme app sur telephone/PC
+- **Auto-refresh** toutes les 30s pour sync multi-appareils
+- **Badge onglet** : nombre de taches dans le titre du navigateur
+- Interface responsive, dark/light mode
+- Accessible en HTTPS depuis n'importe quel appareil Tailscale
 
 ---
 
@@ -38,22 +52,13 @@ curl -fsSL https://raw.githubusercontent.com/amartidandqdq/todolist/master/insta
 
 Quand le script te demande ta cle Tailscale, colle-la.
 
-C'est tout ! L'app sera accessible a :
+L'app sera accessible a : `https://todolist.<ton-tailnet>.ts.net`
 
-```
-https://todolist.<ton-tailnet>.ts.net
-```
-
-(Tu peux trouver le nom de ton tailnet dans l'admin Tailscale)
-
-### Installation manuelle (alternative)
+### Installation manuelle
 
 ```bash
-# Clone le projet
 git clone https://github.com/amartidandqdq/todolist.git
 cd todolist
-
-# Lance l'installateur
 bash install.sh
 ```
 
@@ -63,43 +68,36 @@ bash install.sh
 
 ### Acceder a l'app
 
-Depuis n'importe quel appareil connecte a ton Tailscale :
 - Ouvre `https://todolist.<ton-tailnet>.ts.net` dans ton navigateur
-- Sur telephone : ajoute la page en raccourci sur l'ecran d'accueil
+- Sur telephone : ajoute la page en raccourci sur l'ecran d'accueil (c'est une PWA)
 
-### Gerer les taches
+### Raccourcis
 
-- **Ajouter une tache** : tape dans le champ en haut et appuie sur Entree
-- **Cocher une tache** : clique sur le rond a gauche
-- **Modifier une tache** : clique sur le texte de la tache (panneau a droite)
-- **Ajouter une sous-tache** : clique "+ Add subtask" sous une tache
-- **Reorganiser** : glisse-depose les taches
-- **Creer une liste** : clique "+ New list" dans la barre laterale
+| Action | Raccourci |
+|--------|-----------|
+| Nouvelle tache | Tape dans le champ + Entree |
+| Editer le titre | Double-clic sur le titre |
+| Completer | Clic sur le cercle / Swipe droite (mobile) |
+| Favori | Clic sur l'etoile |
+| Multi-selection | Ctrl+clic sur plusieurs taches |
+| Rechercher | Clic sur la loupe |
+| Aide raccourcis | Ctrl+/ |
 
-### Taches recurrentes
+### Export / Import
 
-1. Clique sur une tache pour ouvrir le panneau de detail
-2. Choisis la recurrence (Daily, Weekly, Monthly...)
-3. Quand tu coches la tache, une nouvelle est automatiquement creee
+Dans la sidebar en bas :
+- **Export** : telecharge un fichier JSON avec toutes tes donnees
+- **Import** : charge un fichier JSON de sauvegarde
 
 ---
 
 ## Sauvegardes
 
-Les donnees sont dans le dossier `data/`. Pour sauvegarder :
-
 ```bash
 cd ~/todolist
-bash backup.sh
+bash backup.sh                              # Sauvegarder
+bash backup.sh restore backups/fichier.db   # Restaurer
 ```
-
-Les sauvegardes sont dans `backups/`. Pour restaurer :
-
-```bash
-bash backup.sh restore backups/todolist-2026-04-07.db
-```
-
----
 
 ## Mise a jour
 
@@ -108,33 +106,12 @@ cd ~/todolist
 bash update.sh
 ```
 
----
-
 ## Depannage
 
-### L'app ne demarre pas
 ```bash
-cd ~/todolist
-docker compose logs
-```
-
-### Je ne peux pas acceder a l'app
-- Verifie que Tailscale est actif sur ton appareil
-- Verifie que le container tourne : `docker compose ps`
-- Relance : `docker compose restart`
-
-### Je veux changer le nom de l'app dans Tailscale
-Edite `.env` et change `TS_HOSTNAME=todolist` par le nom voulu, puis :
-```bash
-docker compose down
-docker compose up -d
-```
-
-### Je veux tout supprimer
-```bash
-cd ~/todolist
-docker compose down -v
-cd .. && rm -rf todolist
+cd ~/todolist && docker compose logs        # Voir les logs
+docker compose ps                           # Verifier les conteneurs
+docker compose restart                      # Relancer
 ```
 
 ---
@@ -143,8 +120,18 @@ cd .. && rm -rf todolist
 
 | Composant | Technologie | Role |
 |-----------|------------|------|
-| Interface | React + TypeScript | Ce que tu vois dans le navigateur |
+| Interface | React + TypeScript + dnd-kit | Ce que tu vois dans le navigateur |
 | Serveur | Node.js + Express | Gere les requetes et sert l'interface |
-| Base de donnees | SQLite | Stocke tes taches (un seul fichier) |
+| Base de donnees | SQLite (sql.js) | Stocke tes taches (un seul fichier) |
 | Conteneur | Docker | Emballe tout pour que ca tourne partout |
 | Reseau | Tailscale | Connexion securisee entre tes appareils |
+
+### API pour agents IA
+
+- OpenAPI spec : `GET /api/openapi.yaml`
+- CLI : `./cli.sh add "Ma tache" --due 2026-04-10`
+- Webhooks : `POST /api/webhooks`
+- Batch : `POST/PUT/DELETE /api/tasks/batch`
+- Export : `GET /api/export`
+- Import : `POST /api/import`
+- Plugins : deposer un `.ts` dans `server/plugins/`

@@ -6,13 +6,14 @@ import { emitEvent } from '../utils/webhooks.js';
 const router = Router();
 
 router.get('/tasks', (req: Request, res: Response) => {
-  const { list_id, completed, starred, sort } = req.query;
+  const { list_id, completed, starred, sort, q } = req.query;
   let sql = 'SELECT * FROM tasks WHERE parent_id IS NULL';
   const params: any[] = [];
 
   if (list_id) { sql += ' AND list_id = ?'; params.push(list_id); }
   if (completed !== undefined) { sql += ' AND completed = ?'; params.push(completed === 'true' ? 1 : 0); }
   if (starred === 'true') { sql += ' AND starred = 1'; }
+  if (q) { sql += ' AND (title LIKE ? OR notes LIKE ?)'; params.push(`%${q}%`, `%${q}%`); }
 
   if (sort === 'date') sql += ' ORDER BY completed ASC, due_date IS NULL, due_date ASC, position ASC';
   else if (sort === 'starred') sql += ' ORDER BY completed ASC, starred DESC, updated_at DESC';
