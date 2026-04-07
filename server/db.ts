@@ -1,20 +1,70 @@
-import Database from 'better-sqlite3';
+import initSqlJs, { Database as SqlJsDatabase } from 'sql.js';
+import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const dbPath = path.join(__dirname, '..', 'data', 'todolist.db');
+const dataDir = path.dirname(dbPath);
 
-const db = new Database(dbPath);
+if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
 
-// Performance pragmas
-db.pragma('journal_mode = WAL');
-db.pragma('foreign_keys = ON');
-db.pragma('synchronous = NORMAL');
-db.pragma('cache_size = -8000');
-db.pragma('busy_timeout = 5000');
-db.pragma('temp_store = MEMORY');
+const SQL = await initSqlJs();
+const buffer = fs.existsSync(dbPath) ? fs.readFileSync(dbPath) : undefined;
+const sqlDb = new SQL.Database(buffer);
 
+// Auto-save to disk every 5s and on exit
+let dirty = false;
+function save() { if (dirty) { fs.writeFileSync(dbPath, sqlDb.export()); dirty = false; } }
+setInterval(save, 5000);
+process.on('exit', save);
+process.on('SIGINT', () => { save(); process.exit(); });
+process.on('SIGTERM', () => { save(); process.exit(); });
+
+// Wrapper matching better-sqlite3 API so all routes work unchanged
+const db = {
+  prepare(sql: string) {
+    return {
+      all(...params: any[]) {
+        const stmt = sqlDb.prepare(sql);
+        stmt.bind(params.length === 1 && Array.isArray(params[0]) ? params[0] : params);
+        const rows: any[] = [];
+        while (stmt.step()) rows.push(stmt.getAsObject());
+        stmt.free();
+        return rows;
+      },
+      get(...params: any[]) {
+        const stmt = sqlDb.prepare(sql);
+        stmt.bind(params.length === 1 && Array.isArray(params[0]) ? params[0] : params);
+        const row = stmt.step() ? stmt.getAsObject() : undefined;
+        stmt.free();
+        return row;
+      },
+      run(...params: any[]) {
+        sqlDb.run(sql, params.length === 1 && Array.isArray(params[0]) ? params[0] : params);
+        dirty = true;
+        return {
+          changes: sqlDb.getRowsModified(),
+          lastInsertRowid: (sqlDb.exec("SELECT last_insert_rowid() as id")[0]?.values[0]?.[0]) ?? 0,
+        };
+      },
+    };
+  },
+  exec(sql: string) {
+    sqlDb.run(sql);
+    dirty = true;
+  },
+  pragma(_p: string) {},
+  transaction<T>(fn: () => T) {
+    return () => {
+      sqlDb.run('BEGIN');
+      try { const result = fn(); sqlDb.run('COMMIT'); dirty = true; return result; }
+      catch (e) { sqlDb.run('ROLLBACK'); throw e; }
+    };
+  },
+};
+
+// Schema
 db.exec(`
   CREATE TABLE IF NOT EXISTS lists (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -41,12 +91,23 @@ db.exec(`
     FOREIGN KEY (parent_id) REFERENCES tasks(id) ON DELETE CASCADE
   );
 
+  CREATE TABLE IF NOT EXISTS webhooks (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    url TEXT NOT NULL,
+    events TEXT NOT NULL,
+    secret TEXT,
+    created_at TEXT DEFAULT (datetime('now'))
+  );
+
   CREATE INDEX IF NOT EXISTS idx_tasks_list_id ON tasks(list_id);
   CREATE INDEX IF NOT EXISTS idx_tasks_parent_id ON tasks(parent_id);
   CREATE INDEX IF NOT EXISTS idx_tasks_completed ON tasks(list_id, completed, position);
-  CREATE INDEX IF NOT EXISTS idx_tasks_due_date ON tasks(due_date) WHERE due_date IS NOT NULL;
-
-  INSERT OR IGNORE INTO lists (id, name, color, position) VALUES (1, 'My Tasks', '#4285f4', 0);
 `);
+
+// Seed default list
+const existing = db.prepare('SELECT id FROM lists WHERE id = 1').get();
+if (!existing) db.prepare('INSERT INTO lists (id, name, color, position) VALUES (?, ?, ?, ?)').run(1, 'My Tasks', '#4285f4', 0);
+
+save();
 
 export default db;

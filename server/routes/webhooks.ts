@@ -3,17 +3,6 @@ import db from '../db.js';
 
 const router = Router();
 
-// Init webhooks table
-db.exec(`
-  CREATE TABLE IF NOT EXISTS webhooks (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    url TEXT NOT NULL,
-    events TEXT NOT NULL,
-    secret TEXT,
-    created_at TEXT DEFAULT (datetime('now'))
-  );
-`);
-
 router.get('/webhooks', (_req: Request, res: Response) => {
   const webhooks = db.prepare('SELECT id, url, events, created_at FROM webhooks').all();
   res.json(webhooks.map((w: any) => ({ ...w, events: JSON.parse(w.events) })));
