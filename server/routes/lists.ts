@@ -5,7 +5,7 @@
  */
 import { Router, Request, Response } from 'express';
 import db from '../db/index.js';
-import { emitEvent } from '../utils/webhooks.js';
+import { withWebhookEmit } from '../middleware/index.js';
 
 const router = Router();
 
@@ -15,12 +15,11 @@ router.get('/lists', (_req: Request, res: Response): void => {
 });
 
 /** POST /lists — Create a new list */
-router.post('/lists', (req: Request, res: Response): void => {
+router.post('/lists', withWebhookEmit('list.created'), (req: Request, res: Response): void => {
   const { name, color } = req.body as { name: string; color?: string };
   const maxPos = db.prepare('SELECT COALESCE(MAX(position), -1) as max FROM lists').get() as any;
   const result = db.prepare('INSERT INTO lists (name, color, position) VALUES (?, ?, ?)').run(name, color || '#4285f4', maxPos.max + 1);
   const list = db.prepare('SELECT * FROM lists WHERE id = ?').get(result.lastInsertRowid);
-  emitEvent('list.created', list);
   res.status(201).json(list);
 });
 
@@ -32,11 +31,11 @@ router.put('/lists/:id', (req: Request, res: Response): void => {
 });
 
 /** DELETE /lists/:id — Delete a list and cascade-delete its tasks */
-router.delete('/lists/:id', (req: Request, res: Response): void => {
+router.delete('/lists/:id', withWebhookEmit('list.deleted'), (req: Request, res: Response): void => {
   const list = db.prepare('SELECT * FROM lists WHERE id = ?').get(req.params.id);
+  res.locals.webhookPayload = list;
   db.prepare('DELETE FROM lists WHERE id = ?').run(req.params.id);
-  emitEvent('list.deleted', list);
-  res.status(204).end();
+  res.json({ deleted: true });
 });
 
 export default router;
