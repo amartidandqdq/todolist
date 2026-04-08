@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import db from '../db/index.js';
+import { config } from '../config/index.js';
 import { findTask, nextPosition, validateArray } from '../utils/taskValidation.js';
 
 const router = Router();
@@ -15,7 +16,7 @@ router.post('/tasks/batch', (req: Request, res: Response) => {
 
   const created = db.transaction(() => {
     return tasks.map((t: any) => {
-      const listId = t.list_id || 1;
+      const listId = t.list_id || config.defaultListId;
       const pos = nextPosition({ listId });
       const result = insert.run(listId, null, t.title, t.notes || '', t.due_date || null, pos, t.recurrence_rule || null);
       return findTask(result.lastInsertRowid as number);

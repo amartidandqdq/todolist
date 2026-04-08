@@ -5,7 +5,9 @@
  */
 import { Router, Request, Response } from 'express';
 import db from '../db/index.js';
+import { config } from '../config/index.js';
 import { withWebhookEmit } from '../middleware/index.js';
+import { validateListInput } from '../utils/validate.js';
 
 const router = Router();
 
@@ -16,9 +18,11 @@ router.get('/lists', (_req: Request, res: Response): void => {
 
 /** POST /lists — Create a new list */
 router.post('/lists', withWebhookEmit('list.created'), (req: Request, res: Response): void => {
+  const v = validateListInput(req.body);
+  if (!v.valid) { res.status(400).json({ error: v.error }); return; }
   const { name, color } = req.body as { name: string; color?: string };
   const maxPos = db.prepare('SELECT COALESCE(MAX(position), -1) as max FROM lists').get() as any;
-  const result = db.prepare('INSERT INTO lists (name, color, position) VALUES (?, ?, ?)').run(name, color || '#4285f4', maxPos.max + 1);
+  const result = db.prepare('INSERT INTO lists (name, color, position) VALUES (?, ?, ?)').run(name, color || config.defaultListColor, maxPos.max + 1);
   const list = db.prepare('SELECT * FROM lists WHERE id = ?').get(result.lastInsertRowid);
   res.status(201).json(list);
 });

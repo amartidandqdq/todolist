@@ -1,6 +1,7 @@
 import initSqlJs from 'sql.js';
 import fs from 'fs';
 import type { DatabaseAdapter } from './types.js';
+import { config } from '../config/index.js';
 
 /** Save callback ref */
 let dirty = false;
@@ -23,7 +24,7 @@ export async function createDatabase(dbPath: string): Promise<DatabaseAdapter> {
     if (dirty) { fs.writeFileSync(dbPath, sqlDb.export()); dirty = false; }
   }
 
-  setInterval(save, 5000);
+  setInterval(save, config.dbSaveInterval);
   process.on('exit', save);
   process.on('SIGINT', () => { save(); process.exit(); });
   process.on('SIGTERM', () => { save(); process.exit(); });

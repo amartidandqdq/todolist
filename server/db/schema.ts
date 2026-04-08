@@ -1,4 +1,8 @@
 import type { DatabaseAdapter } from './types.js';
+import { createLogger } from '../utils/logger.js';
+import { config } from '../config/index.js';
+
+const log = createLogger('schema');
 
 /** Core table definitions */
 const TABLES = `
@@ -45,13 +49,15 @@ const TABLES = `
 export function applySchema(db: DatabaseAdapter): void {
   db.exec(TABLES);
 
-  // Migrations (idempotent ALTER TABLE — catch duplicate column errors)
-  try { db.exec('ALTER TABLE tasks ADD COLUMN starred INTEGER DEFAULT 0'); } catch (_) {}
-  try { db.exec('ALTER TABLE tasks ADD COLUMN due_time TEXT'); } catch (_) {}
+  // Migrations (idempotent ALTER TABLE — expected duplicate column errors are suppressed)
+  try { db.exec('ALTER TABLE tasks ADD COLUMN starred INTEGER DEFAULT 0'); }
+  catch (e: any) { if (!e.message?.includes('duplicate column')) log.warn('Migration starred failed', { error: e.message }); }
+  try { db.exec('ALTER TABLE tasks ADD COLUMN due_time TEXT'); }
+  catch (e: any) { if (!e.message?.includes('duplicate column')) log.warn('Migration due_time failed', { error: e.message }); }
 
   // Seed default list
   const existing = db.prepare('SELECT id FROM lists WHERE id = 1').get();
   if (!existing) {
-    db.prepare('INSERT INTO lists (id, name, color, position) VALUES (?, ?, ?, ?)').run(1, 'My Tasks', '#4285f4', 0);
+    db.prepare('INSERT INTO lists (id, name, color, position) VALUES (?, ?, ?, ?)').run(1, 'My Tasks', config.defaultListColor, 0);
   }
 }
