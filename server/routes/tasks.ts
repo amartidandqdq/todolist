@@ -1,7 +1,9 @@
 import { Router, Request, Response } from 'express';
 import db from '../db/index.js';
+import { config } from '../config/index.js';
 import { computeNextDate } from '../utils/recurrence.js';
 import { findTask, nextPosition } from '../utils/taskValidation.js';
+import { validateTaskInput } from '../utils/validate.js';
 import { withWebhookEmit } from '../middleware/index.js';
 
 const router = Router();
@@ -29,8 +31,10 @@ router.get('/tasks', (req: Request, res: Response) => {
 });
 
 router.post('/tasks', withWebhookEmit('task.created'), (req: Request, res: Response) => {
+  const v = validateTaskInput(req.body);
+  if (!v.valid) return res.status(400).json({ error: v.error });
   const { list_id, parent_id, title, notes, due_date, due_time, recurrence_rule, starred } = req.body;
-  const targetListId = list_id || 1;
+  const targetListId = list_id || config.defaultListId;
 
   const pos = parent_id
     ? nextPosition({ parentId: parent_id })

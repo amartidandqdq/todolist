@@ -1,5 +1,8 @@
 import db from '../db/index.js';
 import { createHmac } from 'crypto';
+import { createLogger } from './logger.js';
+
+const log = createLogger('webhooks');
 
 /** Webhook row as stored in SQLite */
 interface WebhookRow {
@@ -29,6 +32,7 @@ export async function emitEvent(event: string, payload: unknown): Promise<void> 
       headers['X-Webhook-Signature'] = createHmac('sha256', wh.secret).update(body).digest('hex');
     }
 
-    fetch(wh.url, { method: 'POST', headers, body }).catch(() => {});
+    fetch(wh.url, { method: 'POST', headers, body })
+      .catch((err: Error) => log.warn(`Delivery to ${wh.url} failed: ${err.message}`, { event, webhookId: wh.id }));
   }
 }
