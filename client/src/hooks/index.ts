@@ -5,3 +5,5 @@
 export { useLists } from './useLists';
 export { useTasks } from './useTasks';
 export { useTheme } from './useTheme';
+export { useUndoManager } from './useUndoManager';
+export { useAppState } from './useAppState';
